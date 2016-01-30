@@ -1,0 +1,35 @@
+.files li {
+    display: inline-block;
+    padding: 10px;
+    height: 120px;
+}
+.files div {
+    height: 100%;
+}
+.files div :hover {
+    background-color: rgba(27, 167, 216, 0.4);
+}
+.files img {
+    width: 80px;
+    height: 80px;
+    display: block;
+    margin: auto;
+    padding: 0 20px;
+}
+.files label {
+    text-align: center;
+    display: block;
+    width: 120px;
+    height: 55px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+/*
+  Allow angular.js to be loaded in body, hiding cloaked elements until
+  templates compile.  The !important is important given that there may be
+  other selectors that are more specific or come later and might alter display.
+ */
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}
