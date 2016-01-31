@@ -113,7 +113,10 @@ html, body {
     height: 100%;
 }
 .files li:hover {
-    background-color: rgba(27, 167, 216, 0.4);
+    background-color: rgba(27, 167, 216, 0.31);
+}
+.selected-file {
+    background-color: rgba(27, 167, 216, 0.61);
 }
 .files img {
     width: 80px;

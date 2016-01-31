@@ -11,7 +11,7 @@
                 <i class="material-icons">arrow_upward</i>
             </button>
             <div class="mdl-textfield mdl-js-textfield">
-                <input [(ngModel)]="path" class="mdl-textfield__input" type="text">
+                <input [(ngModel)]="path" (keydown)="goToPath($event)" class="mdl-textfield__input" type="text">
                 <label class="mdl-textfield__label"></label>
             </div>
             <div class="mdl-layout-spacer"></div>
@@ -75,7 +75,10 @@
             </li>
         </ul>
         <ul class="files" *ngIf="!showDrives">
-            <li *ngFor="#file of files" (dblclick)="joinFolder(file)">
+            <li *ngFor="#file of files"
+                (dblclick)="joinFolder(file)"
+                (click)="selectFile($event, file)"
+                [ngClass]="{'selected-file': file.isSelected}">
                 <div>
                     <img [src]="file.icon">
                     <label>{{file.fileName}}</label>

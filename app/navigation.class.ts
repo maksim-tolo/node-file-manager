@@ -57,6 +57,10 @@ export class Navigation {
     return this.go(this.currentPath + folderName, saveToHistory);
   }
 
+  public refresh(): Promise<Array<string> | Error> {
+    return this.go(this.currentPath);
+  }
+
   private updateCurrentPath(path: string, saveToHistory: boolean = true): void {
     if (saveToHistory) {
       this.history.saveToHistory(path);
