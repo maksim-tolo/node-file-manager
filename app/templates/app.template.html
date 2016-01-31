@@ -1,17 +1,17 @@
 <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
     <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
         <div class="mdl-layout__header-row">
-            <button (click)="back()" class="mdl-button mdl-js-button mdl-button--icon">
+            <button (click)="back()" [disabled]="navigation.isBottomOfTheHistory" class="mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons">arrow_back</i>
             </button>
-            <button (click)="forward()" class="mdl-button mdl-js-button mdl-button--icon">
+            <button (click)="forward()" [disabled]="navigation.isTopOfTheHistory" class="mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons">arrow_forward</i>
             </button>
-            <button (click)="upward()" class="mdl-button mdl-js-button mdl-button--icon">
+            <button (click)="upward()" [disabled]="navigation.isRootFolder" class="mdl-button mdl-js-button mdl-button--icon">
                 <i class="material-icons">arrow_upward</i>
             </button>
             <div class="mdl-textfield mdl-js-textfield">
-                <input [(ngModel)]="currentPath" class="mdl-textfield__input" type="text">
+                <input [(ngModel)]="path" class="mdl-textfield__input" type="text">
                 <label class="mdl-textfield__label"></label>
             </div>
             <div class="mdl-layout-spacer"></div>
@@ -66,11 +66,19 @@
         </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-        <ul class="files">
-            <li *ngFor="#drive of drives" (dblclick)="defineAction(drive)">
+        <ul class="files" *ngIf="showDrives">
+            <li *ngFor="#drive of drives" (dblclick)="joinDrive(drive)">
                 <div>
                     <img [src]="drive.icon">
                     <label>{{drive.fileName}}</label>
+                </div>
+            </li>
+        </ul>
+        <ul class="files" *ngIf="!showDrives">
+            <li *ngFor="#file of files" (dblclick)="joinFolder(file)">
+                <div>
+                    <img [src]="file.icon">
+                    <label>{{file.fileName}}</label>
                 </div>
             </li>
         </ul>

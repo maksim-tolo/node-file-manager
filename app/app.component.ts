@@ -1,5 +1,6 @@
 import {Component, NgZone} from 'angular2/core';
 import {FileSelector}      from './file-selector.class'
+import {Navigation}        from './navigation.class';
 
 @Component({
   selector: 'node-file-manager',
@@ -14,27 +15,65 @@ export class NodeFileManager {
   private fileSelector: FileSelector;
   private fileWatcher;
 
+  public navigation: Navigation;
   public drives: Array<Drive>;
-  public currentPath: string;
+  public files: Array<File>;
+  public path: string;
+  public showDrives: boolean;
 
   constructor(zone: NgZone) {
     this.drives = [];
-    this.currentPath = '/dfdf/';
+    this.path = '';
     this.zone = zone;
+    this.showDrives = true;
     this.fileSelector = new FileSelector();
+    this.navigation = new Navigation();
     this.refreshDriveList();
   }
 
   public back() {
-    //this.getFiles(this.currentPath + '../');
+    this.navigation.back()
+      .then(this.onChangeFolder.bind(this))
+      .catch((err: Error) => {
+        console.log(err);
+      });
   }
 
-  public defineAction(drive) {
+  public forward() {
+    this.navigation.forward()
+      .then(this.onChangeFolder.bind(this))
+      .catch((err: Error) => {
+        console.log(err);
+      });
+  }
+
+  public upward() {
+    this.navigation.upward()
+      .then(this.onChangeFolder.bind(this))
+      .catch((err: Error) => {
+        console.log(err);
+      });
+  }
+
+  public joinDrive(drive: Drive) {
+    this.navigation.go(drive.fileName, true)
+      .then(this.onChangeFolder.bind(this))
+      .catch((err: Error) => {
+        console.log(err);
+      });
     /*if (file && file.isFile && file.isFile()) {
-      gui.Shell.openItem($scope.currentPath + file.fileName);
+      gui.Shell.openItem($scope.path + file.fileName);
     } else {
-      getFiles(this.currentPath + file.fileName + '/');
+      getFiles(this.path + file.fileName + '/');
     }*/
+  }
+
+  public joinFolder(folder) {
+    this.navigation.joinFolder(folder.fileName, true)
+      .then(this.onChangeFolder.bind(this))
+      .catch((err: Error) => {
+        console.log(err);
+      });
   }
 
   private refreshDriveList(): void {
@@ -51,42 +90,52 @@ export class NodeFileManager {
     });
   }
 
+  private onChangeFolder(filesNames?: Array<string>) {
+    this.path = this.navigation.getCurrentPath();
+    if (filesNames) {
+      this.showDrives = false;
+      this.getFilesStat(filesNames);
+    } else {
+      this.showDrives = true;
+    }
+  }
+
  /* private getFiles(path) {
     this.fs.readdir(path, (err, files) => {
       if (err) {
         console.log(err);
       } else {
-        this.currentPath = path;
+        this.path = path;
         if (this.fileWatcher) {
           this.fileWatcher.close();
         }
-        this.fileWatcher = this.fs.watch(this.currentPath,() => {
-          this.getFiles(this.currentPath);
+        this.fileWatcher = this.fs.watch(this.path,() => {
+          this.getFiles(this.path);
         });
         this.getFilesStat(files);
       }
     });
   }*/
 
-  /*getFilesStat(files) {
-    this.fileList = [];
+  getFilesStat(files) {
+    this.files = [];
 
-    files.forEach(function(file) {
+    files.forEach((file) => {
       var stats;
 
       try {
-        stats = this.fs.statSync(this.currentPath + '/' + file);
-        stats.imgSrc = stats.isDirectory() ? 'images/folder.png' : 'images/file.png';
+        stats = this.fs.statSync(this.path + file);
+        stats.icon = stats.isDirectory() ? './images/folder.png' : './images/file.png';
       } catch (err) {
         stats = {
-          imgSrc: 'images/folder.png',
+          icon: './images/folder.png',
           isSystemFile: true
         }
       }
       stats.fileName = file;
-      this.fileList.push(stats);
+      this.files.push(stats);
     });
-  }*/
+  }
 }
 interface Drive {
   description: string,
@@ -95,7 +144,4 @@ interface Drive {
   icon: string,
   mountpoint: string,
   size: string
-}
-interface History {
-  path: string
 }
