@@ -1,5 +1,6 @@
 export class History extends Array {
 
+  [index: number]: string;
   private positionInTheHistory: number;
 
   constructor() {

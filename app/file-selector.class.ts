@@ -1,6 +1,4 @@
-interface File {
-  isSelected: boolean
-}
+import {File}         from './file.class';
 
 export class FileSelector {
 

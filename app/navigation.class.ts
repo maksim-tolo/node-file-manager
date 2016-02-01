@@ -58,7 +58,7 @@ export class Navigation {
   }
 
   public refresh(): Promise<Array<string> | Error> {
-    return this.go(this.currentPath);
+    return this.go(this.currentPath, false);
   }
 
   private updateCurrentPath(path: string, saveToHistory: boolean = true): void {

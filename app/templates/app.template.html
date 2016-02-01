@@ -66,15 +66,15 @@
         </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-        <ul class="files" *ngIf="showDrives">
+        <!--<ul class="files" *ngIf="showDrives">
             <li *ngFor="#drive of drives" (dblclick)="joinDrive(drive)">
                 <div>
                     <img [src]="drive.icon">
                     <label>{{drive.fileName}}</label>
                 </div>
             </li>
-        </ul>
-        <ul class="files" *ngIf="!showDrives">
+        </ul>-->
+        <ul class="files">
             <li *ngFor="#file of files"
                 (dblclick)="joinFolder(file)"
                 (click)="selectFile($event, file)"

@@ -1,6 +1,7 @@
 import {Component, NgZone} from 'angular2/core';
 import {FileSelector}      from './file-selector.class'
 import {Navigation}        from './navigation.class';
+import {File}              from './file.class';
 import {FSWatcher}         from 'fs';
 
 @Component({
@@ -18,20 +19,34 @@ export class NodeFileManager {
   private fileWatcher: FSWatcher;
 
   public navigation: Navigation;
-  public drives: Array<Drive>;
   public files: Array<File>;
+  public drives: Array<File>;
   public path: string;
-  public showDrives: boolean;
 
   constructor(zone: NgZone) {
-    this.drives = [];
     this.files = [];
+    this.drives = [];
     this.path = '';
     this.zone = zone;
-    this.showDrives = true;
     this.fileSelector = new FileSelector();
     this.navigation = new Navigation();
     this.refreshDriveList();
+  }
+
+  public joinFolder(folder) {
+    this.navigation.joinFolder(folder.fileName, true)
+      .then(this.onChangeFolder.bind(this))
+      .catch(this.showErrorPopup.bind(this));
+  }
+
+  public goToPath(event) {
+    const ENTER_KEY_CODE: number = 13;
+
+    if (event.keyCode === ENTER_KEY_CODE) {
+      this.navigation.go(this.path)
+        .then(this.onChangeFolder.bind(this))
+        .catch(this.showErrorPopup.bind(this));
+    }
   }
 
   public back() {
@@ -52,42 +67,24 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  public goToPath(event) {
-    const ENTER_KEY_CODE: number = 13;
-
-    if (event.keyCode === ENTER_KEY_CODE) {
-      this.navigation.go(this.path)
-        .then(this.onChangeFolder.bind(this))
-        .catch(this.showErrorPopup.bind(this));
-    }
-  }
-
-  public joinDrive(drive: Drive) {
+  /*public joinDrive(drive: Drive) {
     this.navigation.go(drive.fileName)
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
-    /*if (file && file.isFile && file.isFile()) {
+    if (file && file.isFile && file.isFile()) {
       gui.Shell.openItem($scope.path + file.fileName);
     } else {
       getFiles(this.path + file.fileName + '/');
-    }*/
-  }
+    }
+  }*/
 
-  public joinFolder(folder) {
-    this.navigation.joinFolder(folder.fileName, true)
-      .then(this.onChangeFolder.bind(this))
-      .catch(this.showErrorPopup.bind(this));
-  }
-
+  //TODO
   private refreshDriveList(): void {
-    this.driveList.list((err: Error, drives: Array<Drive>) => {
+    this.driveList.list((err: Error, drives) => {
       this.zone.run(() => {
         if (!err) {
-          drives.forEach((drive: Drive) => {
-            drive.icon = './images/drive.svg';
-            drive.fileName = drive.mountpoint;
-          });
-          this.drives = drives;
+          this.drives = drives.map((drive) => new File(drive));
+          this.files = this.drives;
         }
       });
     });
@@ -101,10 +98,9 @@ export class NodeFileManager {
     }
     if (filesNames) {
       this.fileWatcher = this.fs.watch(this.navigation.getCurrentPath(), this.refresh.bind(this));
-      this.showDrives = false;
-      this.getFilesStat(filesNames);
+      this.files = this.getFilesStat(filesNames);
     } else {
-      this.showDrives = true;
+      this.files = this.drives;
     }
   }
 
@@ -134,31 +130,22 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  getFilesStat(files) {
-    this.files = [];
+  //TODO
+  getFilesStat(filesNames: Array<string>) {
+    let files = [];
 
-    files.forEach((file) => {
-      let stats;
+    filesNames.forEach((file) => {
+      let stats: File;
 
       try {
-        stats = this.fs.statSync(this.path + file);
-        stats.icon = stats.isDirectory() ? './images/folder.png' : './images/file.png';
+        stats = new File(this.fs.statSync(this.path + file), false, file);
       } catch (err) {
-        stats = {
-          icon: './images/folder.png',
-          isSystemFile: true
-        }
+        console.log(err);
+        stats = new File(null, true, file);
       }
-      stats.fileName = file;
-      this.files.push(stats);
+      files.push(stats);
     });
+
+    return files;
   }
-}
-interface Drive {
-  description: string,
-  device: string,
-  fileName: string,
-  icon: string,
-  mountpoint: string,
-  size: string
 }
