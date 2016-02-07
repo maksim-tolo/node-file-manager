@@ -2,7 +2,7 @@ import {Component, NgZone} from 'angular2/core';
 import {FileSelector}      from './file-selector.class'
 import {Navigation}        from './navigation.class';
 import {File}              from './file.class';
-import {FSWatcher}         from 'fs';
+import {FSWatcher, Stats}  from 'fs';
 
 @Component({
   selector: 'node-file-manager',
@@ -33,10 +33,14 @@ export class NodeFileManager {
     this.refreshDriveList();
   }
 
-  public joinFolder(folder) {
-    this.navigation.joinFolder(folder.fileName, true)
-      .then(this.onChangeFolder.bind(this))
-      .catch(this.showErrorPopup.bind(this));
+  public onFileDblClick(file: File) {
+    if (!file.isSystemFile) {
+      if (file.isDirectory || file.isDrive) {
+        this.joinFolder(file);
+      } else {
+        this.gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
+      }
+    }
   }
 
   public goToPath(event) {
@@ -67,16 +71,23 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  /*public joinDrive(drive: Drive) {
-    this.navigation.go(drive.fileName)
+  public selectFile(event, file: File): void {
+    if (event.ctrlKey) {
+      if (file.isSelected) {
+        this.fileSelector.unselect(file);
+      } else {
+        this.fileSelector.select(file);
+      }
+    } else {
+      this.fileSelector.replaceSelection(file);
+    }
+  }
+
+  private joinFolder(file: File) {
+    this.navigation.joinFolder(file.fileName)
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
-    if (file && file.isFile && file.isFile()) {
-      gui.Shell.openItem($scope.path + file.fileName);
-    } else {
-      getFiles(this.path + file.fileName + '/');
-    }
-  }*/
+  }
 
   //TODO
   private refreshDriveList(): void {
@@ -98,7 +109,8 @@ export class NodeFileManager {
     }
     if (filesNames) {
       this.fileWatcher = this.fs.watch(this.navigation.getCurrentPath(), this.refresh.bind(this));
-      this.files = this.getFilesStat(filesNames);
+      this.getFilesStat(filesNames)
+        .then((files: Array<File>) => this.files = files);
     } else {
       this.files = this.drives;
     }
@@ -108,19 +120,7 @@ export class NodeFileManager {
     console.log(err);
   }
 
-  public selectFile(event, file): void {
-    if (event.ctrlKey) {
-      if (file.isSelected) {
-        this.fileSelector.unselect(file);
-      } else {
-        this.fileSelector.select(file);
-      }
-    } else {
-      this.fileSelector.replaceSelection(file);
-    }
-  }
-
-  private refresh() {
+  private refresh(): void {
     this.navigation.refresh()
       .then((filesNames?: Array<string>) => {
         this.zone.run(() => {
@@ -130,22 +130,13 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  //TODO
-  getFilesStat(filesNames: Array<string>) {
-    let files = [];
-
-    filesNames.forEach((file) => {
-      let stats: File;
-
-      try {
-        stats = new File(this.fs.statSync(this.path + file), false, file);
-      } catch (err) {
-        console.log(err);
-        stats = new File(null, true, file);
-      }
-      files.push(stats);
-    });
-
-    return files;
+  private getFilesStat(filesNames: Array<string>): Promise<Array<File>> {
+    return Promise.all(filesNames.map((fileName: string) => {
+      return new Promise((resolve) => {
+        this.fs.stat(this.path + fileName, (err: Error, stats: Stats) => {
+          resolve(err ? new File(null, true, fileName) : new File(stats, false, fileName));
+        });
+      });
+    }));
   }
 }

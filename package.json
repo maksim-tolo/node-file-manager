@@ -4,7 +4,7 @@
   "description": "simple node file manager",
   "main": "index.html",
   "scripts": {
-    "nw": "node ./node_modules/nw/bin/nw",
+    "nw": "nw",
     "tsc": "tsc",
     "tsc:w": "tsc -w",
     "start": "npm run tsc && npm run nw"

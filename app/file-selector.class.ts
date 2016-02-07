@@ -11,11 +11,7 @@ export class FileSelector {
   public select(files: Array<File> | File): Array<File> {
     FileSelector.toggleSelection(files);
 
-    if (Array.isArray(files)) {
-      this.selected.concat(files);
-    } else {
-      this.selected.push(files);
-    }
+    this.selected.push(...Array.isArray(files) ? files : [files]);
 
     return this.getSelected();
   }

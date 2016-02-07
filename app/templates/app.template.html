@@ -76,7 +76,7 @@
         </ul>-->
         <ul class="files">
             <li *ngFor="#file of files"
-                (dblclick)="joinFolder(file)"
+                (dblclick)="onFileDblClick(file)"
                 (click)="selectFile($event, file)"
                 [ngClass]="{'selected-file': file.isSelected}">
                 <div>
