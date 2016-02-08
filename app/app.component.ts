@@ -1,8 +1,8 @@
 import {Component, NgZone} from 'angular2/core';
+import {FSWatcher, Stats}  from 'fs';
 import {FileSelector}      from './file-selector.class'
 import {Navigation}        from './navigation.class';
 import {File}              from './file.class';
-import {FSWatcher, Stats}  from 'fs';
 
 @Component({
   selector: 'node-file-manager',
@@ -33,17 +33,17 @@ export class NodeFileManager {
     this.refreshDriveList();
   }
 
-  public onFileDblClick(file: File) {
+  public onFileDblClick(file: File): void {
     if (!file.isSystemFile) {
       if (file.isDirectory || file.isDrive) {
         this.joinFolder(file);
       } else {
-        this.gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
+        this.openFile(file);
       }
     }
   }
 
-  public goToPath(event) {
+  public goToPath(event: KeyboardEvent): void {
     const ENTER_KEY_CODE: number = 13;
 
     if (event.keyCode === ENTER_KEY_CODE) {
@@ -53,25 +53,25 @@ export class NodeFileManager {
     }
   }
 
-  public back() {
+  public back(): void {
     this.navigation.back()
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
   }
 
-  public forward() {
+  public forward(): void {
     this.navigation.forward()
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
   }
 
-  public upward() {
+  public upward(): void {
     this.navigation.upward()
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
   }
 
-  public selectFile(event, file: File): void {
+  public selectFile(event: MouseEvent, file: File): void {
     if (event.ctrlKey) {
       if (file.isSelected) {
         this.fileSelector.unselect(file);
@@ -83,10 +83,14 @@ export class NodeFileManager {
     }
   }
 
-  private joinFolder(file: File) {
+  private joinFolder(file: File): void {
     this.navigation.joinFolder(file.fileName)
       .then(this.onChangeFolder.bind(this))
       .catch(this.showErrorPopup.bind(this));
+  }
+
+  private openFile(file: File): void {
+    this.gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
   }
 
   //TODO
@@ -101,12 +105,14 @@ export class NodeFileManager {
     });
   }
 
-  private onChangeFolder(filesNames?: Array<string>) {
+  private onChangeFolder(filesNames?: Array<string>): void {
     this.path = this.navigation.getCurrentPath();
     this.fileSelector.clearSelection();
+
     if (this.fileWatcher) {
       this.fileWatcher.close();
     }
+
     if (filesNames) {
       this.fileWatcher = this.fs.watch(this.navigation.getCurrentPath(), this.refresh.bind(this));
       this.getFilesStat(filesNames)
@@ -116,7 +122,7 @@ export class NodeFileManager {
     }
   }
 
-  private showErrorPopup(err: Error) {
+  private showErrorPopup(err: Error): void {
     console.log(err);
   }
 

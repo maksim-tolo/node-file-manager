@@ -66,23 +66,13 @@
         </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-        <!--<ul class="files" *ngIf="showDrives">
-            <li *ngFor="#drive of drives" (dblclick)="joinDrive(drive)">
-                <div>
-                    <img [src]="drive.icon">
-                    <label>{{drive.fileName}}</label>
-                </div>
-            </li>
-        </ul>-->
         <ul class="files">
             <li *ngFor="#file of files"
                 (dblclick)="onFileDblClick(file)"
                 (click)="selectFile($event, file)"
                 [ngClass]="{'selected-file': file.isSelected}">
-                <div>
-                    <img [src]="file.icon">
-                    <label>{{file.fileName}}</label>
-                </div>
+                <i class="material-icons">{{file.icon}}</i>
+                <span>{{file.fileName}}</span>
             </li>
         </ul>
         <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">

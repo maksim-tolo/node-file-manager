@@ -25,12 +25,12 @@ export class File {
             this.isDirectory = false;
             this.isDrive = true;
             this.fileName = stat.mountpoint;
-            this.icon = './images/drive.svg';
+            this.icon = 'view_agenda';
         } else {
             this.isDirectory = isSystemFile || stat.isDirectory();
             this.isDrive = false;
             this.fileName = fileName;
-            this.icon = this.isDirectory ? './images/folder.png' : './images/file.png';
+            this.icon = this.isDirectory ? 'folder' : 'insert_drive_file';
         }
     }
 }

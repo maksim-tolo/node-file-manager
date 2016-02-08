@@ -104,13 +104,20 @@ html, body {
     color: rgba(255, 255, 255, 0.56);
     margin-right: 32px;
 }
-.files li {
-    display: inline-block;
-    padding: 10px;
-    height: 120px;
+.files {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
-.files div {
-    height: 100%;
+.files li {
+    width: 135px;
+    height: 135px;
+    display: inline-block;
+    text-align: center;
+    cursor: default;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-wrap: break-word;
 }
 .files li:hover {
     background-color: rgba(27, 167, 216, 0.31);
@@ -118,19 +125,11 @@ html, body {
 .selected-file {
     background-color: rgba(27, 167, 216, 0.61);
 }
-.files img {
-    width: 80px;
-    height: 80px;
+.files i {
+    font-size: 100px;
     display: block;
-    margin: auto;
-    padding: 0 20px;
 }
-.files label {
-    text-align: center;
-    display: block;
-    width: 120px;
-    height: 55px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    word-wrap: break-word;
+.files span {
+    position: relative;
+    top: -10px;
 }
