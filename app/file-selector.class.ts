@@ -1,4 +1,5 @@
 import {File}         from './file.class';
+import {without}      from 'node_modules/underscore/underscore.js';
 
 export class FileSelector {
 
@@ -19,11 +20,7 @@ export class FileSelector {
   public unselect(files: Array<File> | File): Array<File> {
     FileSelector.toggleSelection(files);
 
-    if (Array.isArray(files)) {
-      files.forEach((file: File) => this.selected.filter((selectedFile: File) => selectedFile !== file));
-    } else {
-      this.selected.filter((selectedFile: File) => selectedFile !== files);
-    }
+    this.selected = without(this.selected, ...Array.isArray(files) ? files : [files]);
 
     return this.getSelected();
   }
