@@ -1,8 +1,8 @@
-import {History} from "./history.class";
+import {History}           from './history.class';
+import {FileSystem}        from './file-system.class'
 
 export class Navigation {
 
-  private fs = require('fs');
   private currentPath: string;
   private history: History;
 
@@ -34,23 +34,27 @@ export class Navigation {
     return this.currentPath;
   }
 
+  public getFullPathToFile(fileName: string): string {
+    return this.currentPath + fileName;
+  }
+
   public go(path: string = '', saveToHistory: boolean = true): Promise<Array<string> | Error> {
-    return new Promise((resolve, reject) => {
-      if (!path) {
-        this.updateCurrentPath(path, saveToHistory);
-        resolve();
-      } else {
-        path += path.slice(-1) === '/' ? '' : '/';
-        this.fs.readdir(path, (err: Error, filesNames: Array<string>) => {
-          if (err) {
-            reject(err);
-          } else {
-            this.updateCurrentPath(path, saveToHistory);
-            resolve(filesNames);
-          }
+    let toReturn;
+
+    if (!path) {
+      this.updateCurrentPath(path, saveToHistory);
+      toReturn = Promise.resolve(null);
+    } else {
+      path += path.slice(-1) === '/' ? '' : '/';
+      toReturn = FileSystem.readDir(path)
+        .then((filesNames: Array<string>) => {
+          this.updateCurrentPath(path, saveToHistory);
+
+          return filesNames;
         });
-      }
-    });
+    }
+
+    return toReturn;
   }
 
   public joinFolder(folderName: string, saveToHistory: boolean = true): Promise<Array<string> | Error> {

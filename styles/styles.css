@@ -129,6 +129,8 @@ html, body {
 .files i {
     font-size: 100px;
     display: block;
+    width: initial;
+    height: initial;
 }
 .files span {
     position: relative;

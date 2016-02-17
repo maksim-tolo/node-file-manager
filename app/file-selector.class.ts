@@ -1,5 +1,6 @@
-import {File}         from './file.class';
-import {without}      from 'node_modules/underscore/underscore.js';
+import {File}           from './file.class';
+
+let _ = require('underscore');
 
 export class FileSelector {
 
@@ -20,7 +21,7 @@ export class FileSelector {
   public unselect(files: Array<File> | File): Array<File> {
     FileSelector.toggleSelection(files);
 
-    this.selected = without(this.selected, ...Array.isArray(files) ? files : [files]);
+    this.selected = _.without(this.selected, ...Array.isArray(files) ? files : [files]);
 
     return this.getSelected();
   }
@@ -30,6 +31,18 @@ export class FileSelector {
     this.select(files);
 
     return this.getSelected();
+  }
+
+  public selectMultipleItems(files: Array<File>, targetIndex: number): Array<File> {
+    let lastSelectedIndex = files.indexOf(_.last(this.selected));
+    if (lastSelectedIndex === -1) {
+      lastSelectedIndex = 0;
+    }
+
+    let startIndex = Math.min(targetIndex, lastSelectedIndex);
+    let endIndex = Math.max(targetIndex, lastSelectedIndex);
+
+    return this.replaceSelection(files.filter((filter, index) => index >= startIndex && index <= endIndex).reverse());
   }
 
   public clearSelection(): void {

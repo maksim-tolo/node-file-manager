@@ -1,8 +1,13 @@
 import {Component, NgZone} from 'angular2/core';
-import {FSWatcher, Stats}  from 'fs';
+import {FSWatcher}         from 'fs';
 import {FileSelector}      from './file-selector.class'
 import {Navigation}        from './navigation.class';
 import {File}              from './file.class';
+import {FileSystem}        from './file-system.class'
+
+let Io = require('socket.io-client');
+let gui = require('nw.gui');
+let driveList = require('drivelist');
 
 @Component({
   selector: 'node-file-manager',
@@ -10,13 +15,10 @@ import {File}              from './file.class';
 })
 export class NodeFileManager {
 
-  private gui = require('nw.gui');
-  private fs = require('fs');
-  private driveList = require('drivelist');
-
   private zone: NgZone;
   private fileSelector: FileSelector;
   private fileWatcher: FSWatcher;
+  private socket;
 
   public navigation: Navigation;
   public files: Array<File>;
@@ -30,6 +32,13 @@ export class NodeFileManager {
     this.zone = zone;
     this.fileSelector = new FileSelector();
     this.navigation = new Navigation();
+    this.socket = new Io('http://localhost:3000');
+    this.socket.on('connect', () => {
+      this.socket.emit('login', {
+        qwe: 'asd'
+      });
+    });
+    this.initEventListeners();
     this.refreshDriveList();
   }
 
@@ -71,13 +80,15 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  public selectFile(event: MouseEvent, file: File): void {
+  public selectFile(event: MouseEvent, index: number, file: File): void {
     if (event.ctrlKey) {
       if (file.isSelected) {
         this.fileSelector.unselect(file);
       } else {
         this.fileSelector.select(file);
       }
+    } else if (event.shiftKey) {
+      this.fileSelector.selectMultipleItems(this.files, index);
     } else {
       this.fileSelector.replaceSelection(file);
     }
@@ -90,12 +101,12 @@ export class NodeFileManager {
   }
 
   private openFile(file: File): void {
-    this.gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
+    gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
   }
 
   //TODO
   private refreshDriveList(): void {
-    this.driveList.list((err: Error, drives) => {
+    driveList.list((err: Error, drives) => {
       this.zone.run(() => {
         if (!err) {
           this.drives = drives.map((drive) => new File(drive));
@@ -114,8 +125,8 @@ export class NodeFileManager {
     }
 
     if (filesNames) {
-      this.fileWatcher = this.fs.watch(this.navigation.getCurrentPath(), this.refresh.bind(this));
-      this.getFilesStat(filesNames)
+      this.fileWatcher = FileSystem.watchDir(this.path, this.refresh.bind(this));
+      FileSystem.getFilesStat(filesNames, this.path)
         .then((files: Array<File>) => this.files = files);
     } else {
       this.files = this.drives;
@@ -136,13 +147,26 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
-  private getFilesStat(filesNames: Array<string>): Promise<Array<File>> {
-    return Promise.all(filesNames.map((fileName: string) => {
-      return new Promise((resolve) => {
-        this.fs.stat(this.path + fileName, (err: Error, stats: Stats) => {
-          resolve(err ? new File(null, true, fileName) : new File(stats, false, fileName));
-        });
-      });
-    }));
+  private initEventListeners() {
+    const KEY_CODES = {
+      DELETE: 46,
+      A: 65,
+      C: 67,
+      V: 86,
+      X: 88
+    };
+
+    document.addEventListener('keydown', (event: KeyboardEvent) => {
+      event.preventDefault();
+
+      if (event.keyCode === KEY_CODES.DELETE) {
+        FileSystem.removeFiles(this.fileSelector.getSelected(), this.navigation.getCurrentPath())
+          .catch(this.showErrorPopup.bind(this));
+      }
+
+      if (event.keyCode === KEY_CODES.A && event.ctrlKey) {
+        this.fileSelector.replaceSelection(this.files);
+      }
+    });
   }
 }
