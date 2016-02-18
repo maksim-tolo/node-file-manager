@@ -7,7 +7,6 @@ import {FileSystem}        from './file-system.class'
 
 let Io = require('socket.io-client');
 let gui = require('nw.gui');
-let driveList = require('drivelist');
 
 @Component({
   selector: 'node-file-manager',
@@ -22,12 +21,10 @@ export class NodeFileManager {
 
   public navigation: Navigation;
   public files: Array<File>;
-  public drives: Array<File>;
   public path: string;
 
   constructor(zone: NgZone) {
     this.files = [];
-    this.drives = [];
     this.path = '';
     this.zone = zone;
     this.fileSelector = new FileSelector();
@@ -39,7 +36,6 @@ export class NodeFileManager {
       });
     });
     this.initEventListeners();
-    this.refreshDriveList();
   }
 
   public onFileDblClick(file: File): void {
@@ -102,18 +98,6 @@ export class NodeFileManager {
 
   private openFile(file: File): void {
     gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
-  }
-
-  //TODO
-  private refreshDriveList(): void {
-    driveList.list((err: Error, drives) => {
-      this.zone.run(() => {
-        if (!err) {
-          this.drives = drives.map((drive) => new File(drive));
-          this.files = this.drives;
-        }
-      });
-    });
   }
 
   private onChangeFolder(filesNames?: Array<string>): void {

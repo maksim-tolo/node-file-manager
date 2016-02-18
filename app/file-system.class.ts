@@ -41,13 +41,20 @@ export class FileSystem {
   public static removeFiles(files: Array<File>, basePath: string) {
     return Promise.all(files.map((file: File) => {
       let fullPath: string = FileSystem.getFullPath(file.fileName, basePath);
+      let toReturn;
 
-      return file.isDrive ? new Promise((resolve, reject) => reject()) :
-        file.isDirectory ? FileSystem.readDir(fullPath)
-          .then((filesNames: Array<string>) => FileSystem.getFilesStat(filesNames, fullPath))
-          .then((files: Array<File>) => FileSystem.removeFiles(files, fullPath))
-          .then(() => FileSystem.removeEmptyDir(fullPath)) :
-          FileSystem.removeFile(fullPath);
+      if (file.isDrive) {
+        toReturn = Promise.reject(new Error('Can not remove a drive'));
+      } else if (file.isDirectory) {
+        toReturn = FileSystem.readDir(fullPath)
+            .then((filesNames: Array<string>) => FileSystem.getFilesStat(filesNames, fullPath))
+            .then((files: Array<File>) => FileSystem.removeFiles(files, fullPath))
+            .then(() => FileSystem.removeEmptyDir(fullPath));
+      } else {
+        toReturn = FileSystem.removeFile(fullPath);
+      }
+
+      return toReturn;
     }));
   }
 
