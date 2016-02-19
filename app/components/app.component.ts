@@ -1,16 +1,16 @@
 import {Component, NgZone} from 'angular2/core';
 import {FSWatcher}         from 'fs';
-import {FileSelector}      from './file-selector.class'
-import {Navigation}        from './navigation.class';
-import {File}              from './file.class';
-import {FileSystem}        from './file-system.class'
+import {FileSelector}      from './../classes/file-selector.class'
+import {Navigation}        from './../classes/navigation.class';
+import {File}              from './../classes/file.class';
+import {FileSystem}        from './../classes/file-system.class'
 
 let Io = require('socket.io-client');
 let gui = require('nw.gui');
 
 @Component({
   selector: 'node-file-manager',
-  templateUrl: './app/templates/app.template.html'
+  templateUrl: './app/components/app.template.html'
 })
 export class NodeFileManager {
 
@@ -36,6 +36,7 @@ export class NodeFileManager {
       });
     });
     this.initEventListeners();
+    this.refresh();
   }
 
   public onFileDblClick(file: File): void {
@@ -96,39 +97,29 @@ export class NodeFileManager {
       .catch(this.showErrorPopup.bind(this));
   }
 
+  private refresh(): void {
+    this.navigation.refresh()
+      .then(this.onChangeFolder.bind(this))
+      .catch(this.showErrorPopup.bind(this));
+  }
+
   private openFile(file: File): void {
     gui.Shell.openItem(this.navigation.getCurrentPath() + file.fileName);
   }
 
-  private onChangeFolder(filesNames?: Array<string>): void {
+  private onChangeFolder(files: Array<File>): void {
+    this.files = files;
     this.path = this.navigation.getCurrentPath();
     this.fileSelector.clearSelection();
 
     if (this.fileWatcher) {
       this.fileWatcher.close();
     }
-
-    if (filesNames) {
-      this.fileWatcher = FileSystem.watchDir(this.path, this.refresh.bind(this));
-      FileSystem.getFilesStat(filesNames, this.path)
-        .then((files: Array<File>) => this.files = files);
-    } else {
-      this.files = this.drives;
-    }
+    this.fileWatcher = FileSystem.watchDir(this.path, this.refresh.bind(this));
   }
 
   private showErrorPopup(err: Error): void {
     console.log(err);
-  }
-
-  private refresh(): void {
-    this.navigation.refresh()
-      .then((filesNames?: Array<string>) => {
-        this.zone.run(() => {
-          this.onChangeFolder(filesNames);
-        });
-      })
-      .catch(this.showErrorPopup.bind(this));
   }
 
   private initEventListeners() {

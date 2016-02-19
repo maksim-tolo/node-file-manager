@@ -1,4 +1,4 @@
 import {bootstrap}       from 'angular2/platform/browser'
-import {NodeFileManager} from './app.component'
+import {NodeFileManager} from './components/app.component'
 
 bootstrap(NodeFileManager);
