@@ -1,5 +1,5 @@
 import {History}           from './history.class';
-import {FileSystem}        from './file-system.class'
+import {FileSystem}        from './file-system.class';
 import {File}              from './file.class';
 
 export class Navigation {

@@ -1,5 +1,6 @@
 import {Stats, FSWatcher}  from 'fs';
 import {File}              from './file.class';
+//import * as driveList      from 'drivelist';
 
 let fs = require('fs');
 let driveList = require('drivelist');

@@ -24,6 +24,10 @@
     <script>
         window.global = window.nwGlobal;
         System.config({
+            map: {
+                'socket.io-client': 'node_modules/socket.io-client/socket.io.js',
+                'drivelist': 'node_modules/drivelist/build/drivelist.js'
+            },
             packages: {
                 app: {
                     format: 'register',

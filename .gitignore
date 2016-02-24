@@ -40,4 +40,4 @@ node_modules
 app/**/*.js
 app/**/*.map
 
-
+typings

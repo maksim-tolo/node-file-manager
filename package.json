@@ -7,6 +7,7 @@
     "nw": "nw",
     "tsc": "tsc",
     "tsc:w": "tsc -w",
+    "setup": "npm install && typings install",
     "start": "npm run tsc && npm run nw"
   },
   "author": "maksim.tolo@gmail.com",
@@ -21,12 +22,14 @@
     "reflect-metadata": "0.1.2",
     "rxjs": "5.0.0-beta.0",
     "socket.io": "^1.4.5",
+    "socket.io-client": "^1.4.5",
     "systemjs": "0.19.6",
     "underscore": "^1.8.3",
     "zone.js": "0.5.10"
   },
   "devDependencies": {
     "nw": "*",
-    "typescript": "^1.7.3"
+    "typescript": "^1.7.3",
+    "typings": "^0.6.8"
   }
 }

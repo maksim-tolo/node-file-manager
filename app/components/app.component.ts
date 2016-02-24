@@ -1,11 +1,11 @@
 import {Component, NgZone} from 'angular2/core';
+import {connect}           from 'socket.io-client';
 import {FSWatcher}         from 'fs';
-import {FileSelector}      from './../classes/file-selector.class'
+import {FileSelector}      from './../classes/file-selector.class';
 import {Navigation}        from './../classes/navigation.class';
 import {File}              from './../classes/file.class';
-import {FileSystem}        from './../classes/file-system.class'
+import {FileSystem}        from './../classes/file-system.class';
 
-let Io = require('socket.io-client');
 let gui = require('nw.gui');
 
 @Component({
@@ -29,7 +29,7 @@ export class NodeFileManager {
     this.zone = zone;
     this.fileSelector = new FileSelector();
     this.navigation = new Navigation();
-    this.socket = new Io('http://localhost:3000');
+    this.socket = connect('http://localhost:3000');
     this.socket.on('connect', () => {
       this.socket.emit('login', {
         qwe: 'asd'
@@ -132,15 +132,19 @@ export class NodeFileManager {
     };
 
     document.addEventListener('keydown', (event: KeyboardEvent) => {
-      event.preventDefault();
+      const INPUT = 'INPUT';
 
-      if (event.keyCode === KEY_CODES.DELETE) {
-        FileSystem.removeFiles(this.fileSelector.getSelected(), this.navigation.getCurrentPath())
-          .catch(this.showErrorPopup.bind(this));
-      }
+      if (event.target.tagName !== INPUT) {
+        event.preventDefault();
 
-      if (event.keyCode === KEY_CODES.A && event.ctrlKey) {
-        this.fileSelector.replaceSelection(this.files);
+        if (event.keyCode === KEY_CODES.DELETE) {
+          FileSystem.removeFiles(this.fileSelector.getSelected(), this.navigation.getCurrentPath())
+              .catch(this.showErrorPopup.bind(this));
+        }
+
+        if (event.keyCode === KEY_CODES.A && event.ctrlKey) {
+          this.fileSelector.replaceSelection(this.files);
+        }
       }
     });
   }
