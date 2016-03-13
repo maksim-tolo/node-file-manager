@@ -1,20 +1,23 @@
-import {Component, NgZone} from 'angular2/core';
-import {connect}           from 'socket.io-client';
-import {FSWatcher}         from 'fs';
-import {FileSelector}      from './../classes/file-selector.class';
-import {Navigation}        from './../classes/navigation.class';
-import {File}              from './../classes/file.class';
-import {FileSystem}        from './../classes/file-system.class';
+import {Component}           from 'angular2/core';
+import {connect}             from 'socket.io-client';
+import {FSWatcher}           from 'fs';
+import {FileSelector}        from './../classes/file-selector.class';
+import {Navigation}          from './../classes/navigation.class';
+import {File}                from './../classes/file.class';
+import {FileSystem}          from './../classes/file-system.class';
+import {selectionFrame}      from './../directives/selection-frame/selection-frame.directive';
+import {MdlUpgrade}          from './../directives/mdl-upgrade/mdl-upgrade.directive';
 
 let gui = require('nw.gui');
 
 @Component({
   selector: 'node-file-manager',
-  templateUrl: './app/components/app.template.html'
+  templateUrl: './app/components/app.template.html',
+  styleUrls: ['./app/components/app.styles.css'],
+  directives: [selectionFrame, MdlUpgrade]
 })
 export class NodeFileManager {
 
-  private zone: NgZone;
   private fileSelector: FileSelector;
   private fileWatcher: FSWatcher;
   private socket;
@@ -23,18 +26,17 @@ export class NodeFileManager {
   public files: Array<File>;
   public path: string;
 
-  constructor(zone: NgZone) {
+  constructor() {
     this.files = [];
     this.path = '';
-    this.zone = zone;
     this.fileSelector = new FileSelector();
     this.navigation = new Navigation();
-    this.socket = connect('http://localhost:3000');
+    /*this.socket = connect('http://localhost:3000');
     this.socket.on('connect', () => {
       this.socket.emit('login', {
         qwe: 'asd'
       });
-    });
+    });*/
     this.initEventListeners();
     this.refresh();
   }

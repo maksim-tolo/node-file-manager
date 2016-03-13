@@ -1,0 +1,32 @@
+main {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+.files li {
+    width: 135px;
+    height: 135px;
+    margin: 0 5px 0 5px;
+    display: inline-block;
+    text-align: center;
+    cursor: default;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+.files li:hover {
+    background-color: rgba(27, 167, 216, 0.31);
+}
+.selected-file {
+    background-color: rgba(27, 167, 216, 0.61);
+}
+.files i {
+    font-size: 100px;
+    display: block;
+    width: initial;
+    height: initial;
+}
+.files span {
+    position: relative;
+    top: -10px;
+}
