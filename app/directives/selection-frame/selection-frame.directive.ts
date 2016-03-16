@@ -1,18 +1,20 @@
-import {Directive, ElementRef} from 'angular2/core';
+import {Directive, ElementRef, Input} from 'angular2/core';
 
 let _ = require('underscore');
 
 @Directive({
-  selector: '[nfm-selection-frame]',
+  selector: '[nfmSelectionFrame]',
   host: {
     '(mousedown)': 'onMouseDown($event)'
   }
 })
 export class selectionFrame {
 
-  private backdrop;
+  @Input('nfmSelectionFrame') selectionCallback;
+
   private initialWidth: number;
   private initialHeight: number;
+  private backdrop;
   private eventMap;
 
   constructor(private el: ElementRef) {
@@ -21,7 +23,7 @@ export class selectionFrame {
     this.backdrop = document.createElement('div');
     this.eventMap = new Map();
     this.eventMap.set('mousemove', this.onMouseMove.bind(this));
-    this.eventMap.set('mouseup', this.onMouseUp.bind(this));
+    this.eventMap.set('mouseup', this.onMouseUp.bind(this)); //TODO: add scroll event listener using arrow function
 
     this.updateBackdropStyle({
       'position': 'absolute',
@@ -31,39 +33,40 @@ export class selectionFrame {
       'background': 'rgba(153, 204, 255, 0.5)',
       'box-sizing': 'border-box'
     });
+
+    this.el.nativeElement.style.position = 'relative';
   }
 
   public onMouseDown(event) {
-    let left: number = event.pageX;
-    let top: number = event.pageY;
+    const I = 'I';
+    let element = this.el.nativeElement;
+    let left: number = event.pageX - element.offsetLeft + element.scrollLeft;
+    let top: number = event.pageY - element.offsetTop + element.scrollTop;
     let width: number = 0;
     let height: number = 0;
 
-    this.initialWidth = event.pageX;
-    this.initialHeight = event.pageY;
+    //TODO
+    if (event.target.tagName !== I) {
+      this.initialWidth = left;
+      this.initialHeight = top;
 
-    this.updateBackdropStyle(this.getPositionInPixels({left, top, width, height}));
-    this.addEventListeners();
+      this.updateBackdropStyle(this.getPositionInPixels({left, top, width, height}));
+      this.addEventListeners();
+    }
   }
 
   private onMouseMove(event) {
-    let left: number = this.initialWidth;
-    let top: number = this.initialHeight;
-    let width: number = Math.abs(this.initialWidth - event.pageX);
-    let height: number = Math.abs(this.initialHeight - event.pageY);
-
-    if (event.pageX < this.initialWidth) {
-      left = event.pageX;
-    }
-
-    if (event.pageY < this.initialHeight) {
-      top = event.pageY;
-    }
+    let element = this.el.nativeElement;
+    let pageX: number = event.pageX - element.offsetLeft + element.scrollLeft;
+    let pageY: number = event.pageY - element.offsetTop + element.scrollTop;
+    let left: number = Math.min(this.initialWidth, pageX);
+    let top: number = Math.min(this.initialHeight, pageY);
+    let width: number = Math.abs(this.initialWidth - pageX);
+    let height: number = Math.abs(this.initialHeight - pageY);
 
     this.updateBackdropStyle(this.getPositionInPixels(this.getBackdropPosition({left, top, width, height})));
     this.attachBackdrop();
-
-    //this.el.nativeElement.querySelectorAll('li').forEach()
+    this.selectFiles();
   }
 
   private onMouseUp() {
@@ -71,8 +74,26 @@ export class selectionFrame {
     this.removeEventListeners();
   }
 
+  //TODO: configurable selector
+  private selectFiles() {
+    let backdropRect = this.backdrop.getBoundingClientRect();
+    let selectedIndexes = Array.from(this.el.nativeElement.querySelectorAll('li'))
+      .reduce((prev: Array<number>, cur: HTMLElement, index: number) => {
+        let fileRect = cur.getBoundingClientRect();
+
+        if (backdropRect.right > fileRect.left && backdropRect.left < fileRect.right &&
+          backdropRect.bottom > fileRect.top && backdropRect.top < fileRect.bottom) {
+          prev.push(index);
+        }
+
+        return prev;
+      }, []);
+
+    this.selectionCallback(selectedIndexes);
+  }
+
   private attachBackdrop() {
-    let parent = document.body;
+    let parent = this.el.nativeElement;
 
     if (!parent.contains(this.backdrop)) {
       parent.appendChild(this.backdrop);
@@ -80,7 +101,7 @@ export class selectionFrame {
   }
 
   private detachBackdrop() {
-    let parent = document.body;
+    let parent = this.el.nativeElement;
 
     if (parent.contains(this.backdrop)) {
       parent.removeChild(this.backdrop);
@@ -100,10 +121,10 @@ export class selectionFrame {
   }
 
   private getBackdropPosition(position) {
-    let {start: left, size: width} = this.calcPosition(position.left, this.el.nativeElement.offsetLeft,
-      position.width, this.el.nativeElement.offsetWidth);
-    let {start: top, size: height} = this.calcPosition(position.top, this.el.nativeElement.offsetTop,
-      position.height, this.el.nativeElement.offsetHeight);
+    let {start: left, size: width} = this.calcPosition(position.left, 0,
+      position.width, this.el.nativeElement.scrollWidth);
+    let {start: top, size: height} = this.calcPosition(position.top, 0,
+      position.height, this.el.nativeElement.scrollHeight);
 
     return {left, top, width, height};
   }

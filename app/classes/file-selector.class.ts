@@ -4,36 +4,50 @@ let _ = require('underscore');
 
 export class FileSelector {
 
-  private selected: Array<File>;
+  private files: Array<File>;
+  private lastSelectedIndex: number;
 
-  constructor() {
-    this.selected = [];
+  constructor(files = []) {
+    this.files = files;
+    this.lastSelectedIndex = 0;
   }
 
-  public select(files: Array<File> | File): Array<File> {
-    FileSelector.toggleSelection(files);
-
-    this.selected.push(...Array.isArray(files) ? files : [files]);
+  public toggleSelection(files: Array<File> | File, flag?: boolean): Array<File> {
+    (Array.isArray(files) ? files : [files])
+      .forEach((file: File) => file.isSelected = flag === undefined ? !file.isSelected : flag);
 
     return this.getSelected();
+  }
+
+  public select(files: Array<File> | File, replace: boolean = true): Array<File> {
+    if (replace) {
+      this.clearSelection();
+    }
+
+    return this.toggleSelection(files, true);
   }
 
   public unselect(files: Array<File> | File): Array<File> {
-    FileSelector.toggleSelection(files);
-
-    this.selected = _.without(this.selected, ...Array.isArray(files) ? files : [files]);
-
-    return this.getSelected();
+    return this.toggleSelection(files, false);
   }
 
-  public replaceSelection(files: Array<File> | File): Array<File> {
-    this.clearSelection();
-    this.select(files);
-
-    return this.getSelected();
+  public selectByIndexes(indexes: Array<number> | number, replace: boolean = true): Array<File> {
+    return this.select(this.getFilesByIndexes(indexes), replace);
   }
 
-  public selectMultipleItems(files: Array<File>, targetIndex: number): Array<File> {
+  public unselectByIndexes(indexes: Array<number> | number): Array<File> {
+    return this.unselect(this.getFilesByIndexes(indexes));
+  }
+
+  public selectAll(): Array<File> {
+    return this.select(this.files);
+  }
+
+  public clearSelection(): void {
+    this.toggleSelection(this.files, false);
+  }
+
+  /*public selectMultipleItems(files: Array<File>, targetIndex: number): Array<File> {
     let lastSelectedIndex = files.indexOf(_.last(this.selected));
     if (lastSelectedIndex === -1) {
       lastSelectedIndex = 0;
@@ -43,22 +57,13 @@ export class FileSelector {
     let endIndex = Math.max(targetIndex, lastSelectedIndex);
 
     return this.replaceSelection(files.filter((filter, index) => index >= startIndex && index <= endIndex).reverse());
-  }
-
-  public clearSelection(): void {
-    FileSelector.toggleSelection(this.selected);
-    this.selected = [];
-  }
+  }*/
 
   public getSelected(): Array<File> {
-    return this.selected;
+    return this.files.filter((file) => file.isSelected);
   }
 
-  private static toggleSelection(files: Array<File> | File): void {
-    if (Array.isArray(files)) {
-      files.forEach((file: File) => file.isSelected = !file.isSelected);
-    } else {
-      files.isSelected = !files.isSelected;
-    }
+  private getFilesByIndexes(indexes: Array<number> | number) {
+    return (Array.isArray(indexes) ? indexes : [indexes]).map((index: number) => this.files[index])
   }
 }

@@ -29,7 +29,6 @@ export class NodeFileManager {
   constructor() {
     this.files = [];
     this.path = '';
-    this.fileSelector = new FileSelector();
     this.navigation = new Navigation();
     /*this.socket = connect('http://localhost:3000');
     this.socket.on('connect', () => {
@@ -51,14 +50,10 @@ export class NodeFileManager {
     }
   }
 
-  public goToPath(event: KeyboardEvent): void {
-    const ENTER_KEY_CODE: number = 13;
-
-    if (event.keyCode === ENTER_KEY_CODE) {
-      this.navigation.go(this.path)
-        .then(this.onChangeFolder.bind(this))
-        .catch(this.showErrorPopup.bind(this));
-    }
+  public goToPath(): void {
+    this.navigation.go(this.path)
+      .then(this.onChangeFolder.bind(this))
+      .catch(this.showErrorPopup.bind(this));
   }
 
   public back(): void {
@@ -81,17 +76,18 @@ export class NodeFileManager {
 
   public selectFile(event: MouseEvent, index: number, file: File): void {
     if (event.ctrlKey) {
-      if (file.isSelected) {
-        this.fileSelector.unselect(file);
-      } else {
-        this.fileSelector.select(file);
-      }
+      this.fileSelector.toggleSelection(file);
     } else if (event.shiftKey) {
-      this.fileSelector.selectMultipleItems(this.files, index);
+      //this.fileSelector.selectMultipleItems(this.files, index);
     } else {
-      this.fileSelector.replaceSelection(file);
+      this.fileSelector.select(file);
     }
   }
+
+  public selectMultipleFiles = (selectedIndexes: Array<number>) => {
+    //TODO: add shift and ctrl modifiers support
+    this.fileSelector.selectByIndexes(selectedIndexes);
+  };
 
   private joinFolder(file: File): void {
     this.navigation.joinFolder(file.fileName)
@@ -111,8 +107,8 @@ export class NodeFileManager {
 
   private onChangeFolder(files: Array<File>): void {
     this.files = files;
+    this.fileSelector = new FileSelector(files);
     this.path = this.navigation.getCurrentPath();
-    this.fileSelector.clearSelection();
 
     if (this.fileWatcher) {
       this.fileWatcher.close();
@@ -145,7 +141,7 @@ export class NodeFileManager {
         }
 
         if (event.keyCode === KEY_CODES.A && event.ctrlKey) {
-          this.fileSelector.replaceSelection(this.files);
+          this.fileSelector.selectAll();
         }
       }
     });
