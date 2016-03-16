@@ -52,12 +52,11 @@ export class selectionFrame {
     let width: number = Math.abs(this.initialWidth - event.pageX);
     let height: number = Math.abs(this.initialHeight - event.pageY);
 
-    if (event.pageX <= this.initialWidth && event.pageY >= this.initialHeight) {
+    if (event.pageX < this.initialWidth) {
       left = event.pageX;
-    } else if (event.pageX >= this.initialWidth && event.pageY <= this.initialHeight) {
-      top = event.pageY;
-    } else if (event.pageX < this.initialWidth && event.pageY < this.initialHeight) {
-      left = event.pageX;
+    }
+
+    if (event.pageY < this.initialHeight) {
       top = event.pageY;
     }
 
@@ -73,14 +72,18 @@ export class selectionFrame {
   }
 
   private attachBackdrop() {
-    if (!document.body.contains(this.backdrop)) {
-      document.body.appendChild(this.backdrop);
+    let parent = document.body;
+
+    if (!parent.contains(this.backdrop)) {
+      parent.appendChild(this.backdrop);
     }
   }
 
   private detachBackdrop() {
-    if (document.body.contains(this.backdrop)) {
-      document.body.removeChild(this.backdrop);
+    let parent = document.body;
+
+    if (parent.contains(this.backdrop)) {
+      parent.removeChild(this.backdrop);
     }
   }
 
